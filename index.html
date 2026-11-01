@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Niro</title>
+<meta name="theme-color" content="#0E2A30">
+<meta name="description" content="מדברים עם מי שנמצא כאן. צ׳אט לפי מקום, לא לפי אנשי קשר.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Niro">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@700&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=Sora:wght@700&display=swap">
+<style>
+:root{
+  --bg:#EAF0EF; --surface:#F7FAF9; --line:#CFDCDA; --ink:#0E2A30; --muted:#587074;
+  --signal:#F2553C; --signal-soft:#FDE2DC; --on-signal:#FFFFFF;
+  --me:#0E2A30; --on-me:#F7FAF9; --ok:#1F8A6B; --lock:#8DA0A2;
+  --ring:#2FA88F; --ring-soft:#DCF1EB; --mark:#0E2A30; --on-mark:#F7FAF9;
+  --f-brand:"Sora",system-ui,sans-serif;
+  --f-display:"Karantina","IBM Plex Sans Hebrew",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Hebrew",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0A181C; --surface:#10232A; --line:#20393F; --ink:#E3EFEE; --muted:#8AA4A6;
+  --signal:#FF6A50; --signal-soft:#3A1F1A; --on-signal:#1A0905;
+  --me:#E3EFEE; --on-me:#0A181C; --ok:#4CC9A0; --lock:#557073;
+  --ring:#4FD1B5; --ring-soft:#12352F; --mark:#19464F; --on-mark:#E3EFEE; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+[hidden]{display:none!important}
+.app{max-width:480px;height:100%;margin:0 auto;display:flex;flex-direction:column;background:var(--surface);
+  padding-top:env(safe-area-inset-top,0px)}
+@media (min-width:520px){.app{border-inline:1px solid var(--line)}}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* brand */
+.brand{display:flex;align-items:center;gap:9px;direction:ltr;flex:none}
+.brand .mark{width:36px;height:36px;display:block}
+.ripple{transform-origin:20px 20px;animation:ripple 3.2s ease-out infinite}
+@keyframes ripple{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+.word{font-family:var(--f-brand);font-weight:700;font-size:26px;letter-spacing:-.04em;line-height:1;color:var(--ink);display:flex;align-items:baseline}
+.word .o{display:inline-grid;place-items:center;width:.6em;height:.6em;border:.13em solid var(--ink);border-radius:50%;margin-left:.03em}
+.word .o::after{content:"";width:.17em;height:.17em;border-radius:50%;background:var(--signal)}
+
+/* header & nav */
+header.top{padding-block:10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.place{text-align:left;min-width:0;flex:1}
+.place b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.place small{color:var(--muted);font-size:12px;display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block;flex:none}
+.dot.off{background:var(--lock)} .dot.warn{background:var(--signal)}
+.mebtn{border:0;background:none;padding:0;border-radius:50%;flex:none}
+.mebtn .av{width:38px;height:38px;box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--signal)}
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}
+nav.tabs button{background:none;border:0;padding:11px 2px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;display:flex;gap:5px;justify-content:center;align-items:center;font-size:14px}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--signal)}
+.badge{background:var(--signal);color:var(--on-signal);font-size:11px;font-weight:600;min-width:18px;height:18px;border-radius:9px;display:inline-grid;place-items:center;padding:0 5px;font-variant-numeric:tabular-nums}
+main{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column}
+.pane{display:flex;flex-direction:column;flex:1;min-height:0}
+.notice{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--signal-soft);font-size:13px}
+
+/* avatars */
+.av{width:40px;height:40px;border-radius:50%;object-fit:cover;display:block;flex:none;background:var(--bg)}
+.stack{display:flex;align-items:center}
+.stack .av{width:24px;height:24px;box-shadow:0 0 0 2px var(--surface)}
+.stack .av+.av{margin-inline-start:-7px}
+.stack .more{font-size:12px;color:var(--muted);margin-inline-start:6px}
+
+/* radar */
+.radarbox{padding-block:18px 4px;display:grid;justify-items:center;gap:14px}
+.radar{width:100%;max-width:320px;aspect-ratio:1;overflow:visible}
+.radar text{font-family:var(--f-body)}
+.radar .pulse{transform-box:fill-box;transform-origin:center;animation:pulse 3.6s cubic-bezier(.2,.6,.3,1) infinite}
+@keyframes pulse{0%{transform:scale(.12);opacity:.55}100%{transform:scale(1);opacity:0}}
+.radar .who{cursor:pointer;filter:drop-shadow(0 2px 4px rgba(14,42,48,.22))}
+.radar .who:focus,.radar .who:focus-visible{outline:none}
+.radar .who:focus-visible circle.halo{stroke:var(--signal);stroke-width:2.5}
+@media (prefers-reduced-motion:reduce){.radar .pulse,.ripple{animation:none;opacity:0}}
+.rangebar{width:100%;max-width:320px;display:grid;gap:8px}
+.rangebar .lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted)}
+.rangebar .lbl b{color:var(--ink);font-weight:600;font-size:14px}
+.radar-note{font-size:12px;color:var(--muted);text-align:center;margin:0}
+.seg{display:inline-flex;flex-wrap:wrap;gap:2px;background:var(--bg);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;padding:6px 12px;font-size:13px;border-radius:999px;color:var(--muted);min-height:32px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(14,42,48,.14)}
+.rangebar .seg{display:grid;grid-template-columns:repeat(4,1fr)}
+.bars{display:inline-flex;align-items:flex-end;gap:2px;height:11px}
+.bars i{width:3px;border-radius:1px;background:var(--line);display:block}
+.bars i:nth-child(1){height:4px}.bars i:nth-child(2){height:7px}.bars i:nth-child(3){height:11px}
+.bars i.on{background:var(--ring)}
+
+/* lists */
+.section-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-block:16px 6px}
+.section-h h2{margin:0;font-family:var(--f-display);font-size:30px;font-weight:700;line-height:1}
+.section-h small{color:var(--muted);font-size:12px;text-align:left}
+.list{display:flex;flex-direction:column}
+.person{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding-block:10px;border:0;border-bottom:1px solid var(--line);background:none;text-align:right;width:100%}
+.person.out{opacity:.45}
+.meta{min-width:0}
+.meta b{display:block;font-weight:600}
+.meta span{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta .badge{display:inline-grid;vertical-align:middle;color:var(--on-signal);font-size:11px}
+.dist{font-size:13px;color:var(--muted);text-align:left;font-variant-numeric:tabular-nums;display:grid;gap:4px;justify-items:end}
+.dist .d{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip{font-size:11px;padding:1px 7px;border-radius:10px;border:1px solid var(--line);white-space:nowrap}
+.chip.live{border-color:var(--ok);color:var(--ok)}
+.chip.wait{border-color:var(--signal);color:var(--signal)}
+.empty{color:var(--muted);text-align:center;padding:28px 12px;font-size:14px;margin:0}
+
+/* groups */
+.gicon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none}
+.gicon svg{width:22px;height:22px}
+.gicon.cafe{background:#F3E2CF;color:#6B3D16}.gicon.shop{background:#DDE8F5;color:#1F4C7A}
+.gicon.building{background:#E2EEDF;color:#2C5A26}.gicon.other{background:var(--signal-soft);color:var(--signal)}
+@media (prefers-color-scheme: dark){.gicon.cafe{background:#3A2A1C;color:#F0C79B}.gicon.shop{background:#1C2C3D;color:#A9C8EA}.gicon.building{background:#1E3020;color:#AFD8A7}}
+.group{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding-block:12px;border-bottom:1px solid var(--line)}
+.group.out{opacity:.5}
+.filters{padding-block:6px 2px}
+
+/* banners & buttons */
+.banner{margin-top:12px;background:var(--signal-soft);border-radius:14px;padding:12px;display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:center}
+.banner p{margin:0;font-size:14px}
+.banner .acts{grid-column:1/-1;display:flex;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:500;min-height:44px}
+.btn.sm{padding:5px 12px;font-size:13px;min-height:34px;border-radius:10px}
+.btn.primary{background:var(--signal);border-color:var(--signal);color:var(--on-signal)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn.ghost{border:0;background:none;color:var(--muted)}
+.btn.danger{color:#C23A22;border-color:#E9B4A8}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.full{flex:1}
+.card{margin-block:18px 24px;border:1px dashed var(--line);border-radius:14px;padding:12px;display:grid;gap:8px}
+.card p{margin:0;font-size:13px;color:var(--muted)}
+
+/* chat */
+.chathead{display:flex;align-items:center;gap:10px;padding-block:10px;border-bottom:1px solid var(--line)}
+.back{border:0;background:none;font-size:22px;padding:2px 6px;line-height:1;min-width:36px;min-height:36px}
+.chathead .meta{flex:1}
+.chathead .meta small{color:var(--muted);font-size:12px;display:block}
+.msgs{flex:1;overflow-y:auto;padding-block:14px;display:flex;flex-direction:column;gap:6px}
+.m{max-width:78%;padding:8px 12px;border-radius:14px;font-size:15px;overflow-wrap:anywhere;white-space:pre-wrap}
+.m .who{display:block;font-size:12px;font-weight:600;margin-bottom:1px}
+.m.them{align-self:flex-start;background:var(--bg);border-end-start-radius:4px}
+.m.mine{align-self:flex-end;background:var(--me);color:var(--on-me);border-end-end-radius:4px}
+.m.sys{align-self:center;background:none;color:var(--muted);font-size:12px;padding:2px 8px;text-align:center;max-width:90%}
+.m.pic{padding:4px}.m.pic .who{padding:2px 8px 0}
+.m img.shot{display:block;width:min(230px,100%);height:auto;border-radius:11px;cursor:zoom-in;background:var(--line);min-height:80px}
+.row{display:flex;gap:6px;align-items:flex-end;align-self:flex-start;max-width:85%}
+.row .av{width:28px;height:28px}
+.row .m{max-width:100%}
+.msgs.locked .m:not(.sys),.msgs.locked .row .av{opacity:.4}
+.composer{display:flex;gap:8px;align-items:center;padding-block:10px;border-top:1px solid var(--line);padding-bottom:max(10px,env(safe-area-inset-bottom,0px))}
+.composer input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:22px;padding:10px 14px;font:inherit;font-size:16px}
+.composer .send{border:0;background:var(--signal);color:var(--on-signal);border-radius:22px;padding:10px 16px;font-weight:600;min-height:44px}
+.attach{border:1px solid var(--line);background:var(--surface);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--muted)}
+.attach svg{width:20px;height:20px}
+.lockline{padding-block:14px;border-top:1px solid var(--line);text-align:center;color:var(--muted);font-size:14px;display:grid;gap:8px;justify-items:center;padding-bottom:max(14px,env(safe-area-inset-bottom,0px))}
+
+/* full screens: onboarding / location */
+.screen{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:18px;padding-block:28px max(28px,env(safe-area-inset-bottom,0px))}
+.screen h1{margin:0;font-family:var(--f-display);font-weight:700;font-size:58px;line-height:.9;text-wrap:balance}
+.screen h1 span{color:var(--signal)}
+.screen p.lead{margin:0;color:var(--muted);font-size:16px}
+.photo-pick{display:flex;align-items:center;gap:14px}
+.photo-pick .av{width:72px;height:72px}
+.field{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.field input,.field textarea{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:11px 12px;font:inherit;font-size:16px}
+.field textarea{resize:vertical;min-height:80px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--signal);flex:none}
+.err{color:#C23A22;font-size:13px;margin:0}
+.spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--signal);animation:spin 1s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* sheets */
+.scrim{position:fixed;inset:0;background:rgba(8,14,18,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--surface);width:100%;max-width:480px;border-radius:18px 18px 0 0;padding-block:20px max(20px,env(safe-area-inset-bottom,0px));display:grid;gap:12px;max-height:90%;overflow-y:auto}
+.sheet .top{display:flex;gap:14px;align-items:center}
+.sheet .top .av{width:64px;height:64px}
+.sheet h3{margin:0;font-size:20px}
+.sheet p{margin:0;color:var(--muted)}
+.sheet .note{font-size:13px;background:var(--bg);border-radius:10px;padding:10px 12px;color:var(--muted)}
+.sheet .acts{display:flex;gap:8px;flex-wrap:wrap}
+.light{position:fixed;inset:0;background:rgba(5,9,12,.92);display:grid;place-items:center;z-index:25;padding:16px;cursor:zoom-out}
+.light img{max-width:100%;max-height:86vh;border-radius:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:9px 16px;border-radius:20px;font-size:14px;z-index:30;max-width:calc(100% - 32px);text-align:center}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="layer"></div>
+<input type="file" id="picker" accept="image/*" hidden>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+"use strict";
+/* =================================================================
+   Niro · web app v1
+   כל הלוגיקה של מי קרוב, מי רואה מה ונעילת שיחות רצה בשרת (schema.sql).
+   כאן רק ממשק, מיקום וסנכרון כל כמה שניות.
+   ================================================================= */
+const CFG = window.NIRO_CONFIG || {};
+const sb = window.supabase.createClient(CFG.url, CFG.key, {auth:{persistSession:true,autoRefreshToken:true}});
+const POLL_MS = 4000, PUSH_MS = 20000;
+
+const S = {
+  screen:"loading", tab:"near", me:null, pos:null, posErr:null, present:false, paused:false, online:true,
+  radius:150, people:[], chats:[], groups:[], gfilter:"all",
+  square:{msgs:[],last:0}, priv:{}, gmsgs:{},
+  open:null, openGroup:null, seen:{square:0,chat:{},group:{}}, knownIncoming:new Set(), lastPush:0, lastPushPos:null
+};
+try{const r=+localStorage.getItem("niro.radius");if([50,100,150,250].includes(r))S.radius=r;
+  const sn=JSON.parse(localStorage.getItem("niro.seen")||"null");if(sn&&sn.chat)S.seen=sn}catch(e){}
+function saveLocal(){try{localStorage.setItem("niro.radius",S.radius);localStorage.setItem("niro.seen",JSON.stringify(S.seen))}catch(e){}}
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const el=(t,a={},...k)=>{const e=document.createElement(t);for(const[x,v]of Object.entries(a)){if(x==="class")e.className=v;else if(x==="html")e.innerHTML=v;else if(x.startsWith("on"))e.addEventListener(x.slice(2),v);else if(v!==false&&v!=null)e.setAttribute(x,v)}for(const c of k.flat()){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(c))}return e};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function hash(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+const fmt=m=>m==null?"":m<10?"ממש כאן":m>=1000?(m/1000).toFixed(1)+" ק״מ":Math.round(m)+" מ׳";
+function toast(t){document.querySelectorAll(".toast").forEach(x=>x.remove());const e=el("div",{class:"toast",role:"status"},t);document.body.append(e);setTimeout(()=>e.remove(),3000)}
+function initialAvatar(id,name){const h=hash(id)%360;const ch=(name||"?").trim()[0]||"?";
+  return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="hsl(${h} 45% 44%)"/><text x="32" y="41" text-anchor="middle" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="#fff">${ch.replace(/[<&>"]/g,"")}</text></svg>`)}
+const photoOf=u=>u.photo_url||initialAvatar(u.id,u.name);
+function avatar(u,size){const a=el("img",{class:"av",src:photoOf(u),alt:""});a.onerror=()=>{a.onerror=null;a.src=initialAvatar(u.id,u.name)};if(size){a.style.width=a.style.height=size+"px"}return a}
+const ERR={not_present:"לא מצאנו את המיקום שלך עדיין. ודא שהמיקום פעיל.",out_of_range:"המשתמש כבר לא בטווח שלך.",already_open:"כבר יש ביניכם שיחה פתוחה.",
+  chat_locked:"השיחה ננעלה כי אחד מכם התרחק.",not_member:"יצאת מהקבוצה כי התרחקת מהמקום.",blocked:"אי אפשר לשוחח עם המשתמש הזה.",not_pending:"הבקשה כבר לא בתוקף.",bad_location:"המיקום שהתקבל לא תקין."};
+function errText(e){const m=(e&&(e.message||e.error_description))||"";for(const k in ERR)if(m.includes(k))return ERR[k];
+  if(/fetch|network|Failed/i.test(m))return "אין חיבור לאינטרנט. ננסה שוב בעוד רגע.";return "משהו השתבש. נסה שוב."}
+async function rpc(name,args){const {data,error}=await sb.rpc(name,args||{});if(error)throw error;return data}
+const KINDS={cafe:"בית קפה",shop:"חנות",building:"בניין מגורים",other:"מקום אחר"};
+const ICONS={
+ cafe:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c0 1.5 1 1.5 1 3M12 3c0 1.5 1 1.5 1 3"/></svg>`,
+ shop:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>`,
+ building:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h10v17M15 9h4v12M3 21h18"/><path d="M8 7h1M11 7h1M8 11h1M11 11h1M8 15h1M11 15h1"/></svg>`,
+ other:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`,
+ camera:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`
+};
+const gIcon=k=>el("div",{class:"gicon "+k,html:ICONS[k]||ICONS.other,"aria-hidden":"true"});
+const LOGO=`<svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="var(--mark)"/><circle class="ripple" cx="20" cy="20" r="14" fill="none" stroke="var(--ring)" stroke-width="1.6"/><circle cx="20" cy="20" r="9" fill="none" stroke="var(--ring)" stroke-width="2.4"/><circle cx="20" cy="20" r="3.8" fill="var(--signal)"/><circle cx="29.6" cy="11.4" r="2.6" fill="var(--on-mark)"/></svg>`;
+const brand=()=>el("div",{class:"brand",role:"img","aria-label":"Niro",html:LOGO+`<span class="word" aria-hidden="true">nir<span class="o"></span></span>`});
+
+/* ---------- images ---------- */
+async function shrink(file,max,square){
+  const url=URL.createObjectURL(file),img=new Image();
+  await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url});
+  let sx=0,sy=0,sw=img.naturalWidth,sh=img.naturalHeight;
+  if(square){const m=Math.min(sw,sh);sx=(sw-m)/2;sy=(sh-m)/2;sw=sh=m}
+  const k=Math.min(1,max/Math.max(sw,sh)),c=document.createElement("canvas");
+  c.width=Math.round(sw*k);c.height=Math.round(sh*k);
+  c.getContext("2d").drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);URL.revokeObjectURL(url);
+  return await new Promise(r=>c.toBlob(r,"image/jpeg",.84));
+}
+async function uploadImage(file,opts){
+  const blob=await shrink(file,opts.max,opts.square);
+  const path=`${S.me.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
+  const {error}=await sb.storage.from("photos").upload(path,blob,{contentType:"image/jpeg",upsert:false});
+  if(error)throw error;
+  return sb.storage.from("photos").getPublicUrl(path).data.publicUrl;
+}
+function pickImage(opts,cb){
+  const inp=$("#picker");
+  inp.onchange=async()=>{const f=inp.files[0];inp.value="";if(!f)return;
+    if(!f.type.startsWith("image/")){toast("אפשר להעלות רק קבצי תמונה");return}
+    toast("מעלה תמונה…");
+    try{cb(await uploadImage(f,opts))}catch(e){console.error(e);toast("לא הצלחתי להעלות את התמונה. נסה שוב.")}};
+  inp.click();
+}
+function lightbox(src){const L=$("#layer");L.innerHTML="";L.append(el("div",{class:"light",onclick:()=>L.innerHTML=""},el("img",{src,alt:"תמונה מוגדלת"})))}
+function closeSheet(){$("#layer").innerHTML=""}
+function sheet(content,label){const L=$("#layer");L.innerHTML="";const sc=el("div",{class:"scrim",onclick:e=>{if(e.target===sc)closeSheet()}},el("div",{class:"sheet wrap",role:"dialog","aria-label":label||""},...content));L.append(sc);return sc}
+
+/* =================================================================
+   Start: session → profile → location
+   ================================================================= */
+async function boot(){
+  if(!CFG.url||CFG.url.includes("PASTE")){S.screen="config";return render()}
+  render();
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    const {data}=await sb.from("profiles").select("*").eq("id",session.user.id).maybeSingle();
+    if(data){S.me=data;startLocation();S.screen="app";render();loop();return}
+  }
+  S.screen="onboard";render();
+}
+
+function viewOnboard(){
+  let photo=null,busy=false;
+  const ph=el("img",{class:"av",src:initialAvatar("new","?"),alt:"התמונה שלך"});
+  const name=el("input",{id:"obName",maxlength:30,autocomplete:"nickname",placeholder:"איך יקראו לך כאן"});
+  const bio=el("input",{id:"obBio",maxlength:80,placeholder:"למשל: סטודנט, מחכה לחברים, מוכר בדוכן"});
+  const agree=el("input",{type:"checkbox",id:"obAgree"});
+  const err=el("p",{class:"err",role:"alert"});
+  const go=el("button",{class:"btn primary",type:"submit"},"בוא נתחיל");
+  name.addEventListener("input",()=>{if(!photo)ph.src=initialAvatar("new",name.value||"?")});
+  let pendingFile=null;
+  const choose=el("button",{type:"button",class:"btn sm",onclick:()=>{const inp=$("#picker");inp.onchange=()=>{const f=inp.files[0];inp.value="";if(!f||!f.type.startsWith("image/"))return;pendingFile=f;ph.src=URL.createObjectURL(f);photo=true};inp.click()}},"הוסף תמונת פרופיל");
+  const form=el("form",{class:"screen wrap"},
+    brand(),
+    el("h1",{},"מדברים עם מי שנמצא ",el("span",{},"כאן.")),
+    el("p",{class:"lead"},"Niro מראה לך מי משתמש באפליקציה סביבך עכשיו. אפשר לכתוב לכולם, להצטרף לקבוצה של המקום, או לבקש שיחה פרטית. כשאחד מכם הולך, השיחה ננעלת."),
+    el("div",{class:"photo-pick"},ph,el("div",{style:"display:grid;gap:4px"},choose,el("small",{style:"color:var(--muted);font-size:12px"},"לא חובה. אפשר להוסיף אחר כך."))),
+    el("label",{class:"field"},"שם תצוגה",name),
+    el("label",{class:"field"},"שורה עליך (לא חובה)",bio),
+    el("label",{class:"check"},agree,el("span",{},"אני מעל גיל 18, ומבין/ה שאנשים בסביבה יראו את השם, התמונה והמרחק שלי ממני (לא את המיקום המדויק).")),
+    err,go);
+  form.addEventListener("submit",async e=>{e.preventDefault();if(busy)return;err.textContent="";
+    const n=name.value.trim();if(!n){err.textContent="צריך שם תצוגה, אפילו כינוי.";name.focus();return}
+    if(!agree.checked){err.textContent="צריך לאשר את התנאים כדי להמשיך.";return}
+    busy=true;go.disabled=true;go.textContent="רגע…";
+    try{
+      let {data:{session}}=await sb.auth.getSession();
+      if(!session){const r=await sb.auth.signInAnonymously();if(r.error)throw r.error;session=r.data.session}
+      S.me={id:session.user.id,name:n,bio:bio.value.trim(),photo_url:null};
+      if(pendingFile){try{S.me.photo_url=await uploadImage(pendingFile,{max:400,square:true})}catch(x){console.error(x)}}
+      const {error}=await sb.from("profiles").upsert({id:S.me.id,name:S.me.name,bio:S.me.bio,photo_url:S.me.photo_url,updated_at:new Date().toISOString()});
+      if(error)throw error;
+      startLocation();S.screen="app";render();loop();
+    }catch(x){console.error(x);busy=false;go.disabled=false;go.textContent="בוא נתחיל";
+      err.textContent=/anonymous/i.test(x.message||"")?"ההרשמה ללא אימייל לא מופעלת בשרת. צריך להפעיל Anonymous sign-ins ב-Supabase.":errText(x)}
+  });
+  return form;
+}
+function viewConfig(){return el("div",{class:"screen wrap"},brand(),el("h1",{},"כמעט מוכן"),el("p",{class:"lead"},"חסרה כתובת השרת בקובץ config.js."))}
+
+/* ---------- location ---------- */
+let watchId=null;
+function startLocation(){
+  if(!("geolocation" in navigator)){S.posErr="unsupported";return}
+  if(watchId!=null)return;
+  watchId=navigator.geolocation.watchPosition(p=>{
+    S.pos={lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy)};S.posErr=null;
+    pushPresence(false);
+  },e=>{S.posErr=e.code===1?"denied":"unavailable";render(true)},{enableHighAccuracy:true,maximumAge:10000,timeout:25000});
+}
+function movedM(a,b){if(!a||!b)return 1e9;const R=6371000,t=Math.PI/180,dLat=(b.lat-a.lat)*t,dLng=(b.lng-a.lng)*t;
+  const h=Math.sin(dLat/2)**2+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+let pushing=false;
+async function pushPresence(force){
+  if(!S.pos||S.paused||pushing)return;
+  const now=Date.now();
+  if(!force&&now-S.lastPush<PUSH_MS&&movedM(S.lastPushPos,S.pos)<15)return;
+  pushing=true;
+  try{await rpc("update_presence",{p_lat:S.pos.lat,p_lng:S.pos.lng,p_radius:S.radius});
+    const first=!S.present;S.present=true;S.online=true;S.lastPush=now;S.lastPushPos={...S.pos};if(first)poll()}
+  catch(e){console.error(e);if(/fetch|network/i.test(e.message||""))S.online=false}
+  finally{pushing=false}
+}
+async function setPaused(p){
+  S.paused=p;
+  if(p){try{await rpc("go_offline")}catch(e){}S.present=false;S.people=[];S.groups=[];toast("אתה לא גלוי עכשיו. השיחות שלך ננעלו.")}
+  else{S.lastPush=0;await pushPresence(true);toast("אתה שוב גלוי למי שבסביבה")}
+  poll();render();
+}
+
+/* =================================================================
+   Sync loop
+   ================================================================= */
+let polling=false,tickN=0,loopStarted=false;
+function loop(){if(loopStarted)return;loopStarted=true;
+  setInterval(()=>{if(document.visibilityState==="visible"){pushPresence(false);poll()}},POLL_MS);
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){pushPresence(true);poll()}});
+  poll();
+}
+async function poll(){
+  if(polling||!S.me)return;polling=true;tickN++;
+  try{
+    const tasks=[rpc("my_chats")];
+    if(S.present&&!S.paused){tasks.push(rpc("nearby_people"),rpc("get_square",{p_after:S.square.last}));
+      if(tickN%2===1||S.tab==="groups"||S.tab==="group")tasks.push(rpc("nearby_groups"))}
+    const [chats,people,sq,groups]=await Promise.all(tasks);
+    S.online=true;
+    // chats
+    const prevStatus=Object.fromEntries(S.chats.map(c=>[c.id,c.status]));
+    S.chats=chats||[];
+    for(const c of S.chats){
+      if(c.status==="pending"&&!c.i_requested&&!S.knownIncoming.has(c.id)){S.knownIncoming.add(c.id);toast(`${c.other_name} רוצה לשוחח איתך`);buzz()}
+      const was=prevStatus[c.id];
+      if(was==="pending"&&c.status==="active"&&c.i_requested)toast(`${c.other_name} אישר/ה את השיחה`);
+      if(was==="pending"&&c.status==="declined")toast(`${c.other_name} לא אישר/ה את הבקשה`);
+      if(was==="active"&&c.status==="closed"){toast(`השיחה עם ${c.other_name} ננעלה`);delete S.priv[c.id]}
+    }
+    if(people)S.people=people;
+    if(groups)S.groups=groups;
+    if(sq&&sq.length){S.square.msgs.push(...sq.filter(m=>!S.square.msgs.some(x=>x.id===m.id)));S.square.last=sq[sq.length-1].id;
+      if(S.square.msgs.length>300)S.square.msgs=S.square.msgs.slice(-300)}
+    if(!S.present||S.paused){S.people=[];S.groups=[]}
+    // open conversations
+    if(S.tab==="chat"&&S.open)await fetchPrivate(S.open);
+    if(S.tab==="group"&&S.openGroup)await fetchGroup(S.openGroup);
+    if(S.tab==="square"){S.seen.square=S.square.last;saveLocal()}
+  }catch(e){console.error(e);if(/fetch|network|Failed/i.test(e.message||""))S.online=false}
+  finally{polling=false;render(true)}
+}
+function buzz(){try{navigator.vibrate&&navigator.vibrate(60)}catch(e){}}
+async function fetchPrivate(id){
+  const st=S.priv[id]||(S.priv[id]={msgs:[],last:0});
+  const rows=await rpc("get_private",{p_chat:id,p_after:st.last});
+  if(rows&&rows.length){st.msgs.push(...rows.filter(m=>!st.msgs.some(x=>x.id===m.id)));st.last=rows[rows.length-1].id}
+  const c=S.chats.find(c=>c.id===id);if(c&&c.last_id){S.seen.chat[id]=c.last_id;saveLocal()}
+}
+async function fetchGroup(id){
+  const st=S.gmsgs[id]||(S.gmsgs[id]={msgs:[],last:0});
+  const rows=await rpc("get_group",{p_group:id,p_after:st.last});
+  if(rows&&rows.length){st.msgs.push(...rows.filter(m=>!st.msgs.some(x=>x.id===m.id)));st.last=rows[rows.length-1].id}
+  if(st.last){S.seen.group[id]=st.last;saveLocal()}
+}
+
+/* ---------- actions ---------- */
+async function act(fn,okText){try{const r=await fn();if(okText)toast(okText);await poll();return r}catch(e){console.error(e);toast(errText(e));await poll();return null}}
+const requestChat=id=>act(async()=>{await rpc("request_chat",{p_target:id});closeSheet()},"הבקשה נשלחה. השיחה תיפתח כשיאשרו.");
+const answerChat=(id,ok)=>act(async()=>{await rpc("respond_chat",{p_chat:id,p_accept:ok});if(ok){S.tab="chat";S.open=id}});
+const dismissChat=id=>act(async()=>{await rpc("dismiss_chat",{p_chat:id});delete S.priv[id];S.tab="chats";S.open=null});
+async function sendPrivate(id,m){await act(()=>rpc("send_private",{p_chat:id,p_body:m.t||null,p_image:m.img||null}))}
+async function sendSquare(m){await act(()=>rpc("post_square",{p_body:m.t||null,p_image:m.img||null}))}
+async function sendGroup(id,m){await act(()=>rpc("send_group",{p_group:id,p_body:m.t||null,p_image:m.img||null}))}
+const joinGroup=id=>act(async()=>{await rpc("join_group",{p_group:id});S.gmsgs[id]={msgs:[],last:0};S.tab="group";S.openGroup=id});
+const leaveGroup=id=>act(async()=>{await rpc("leave_group",{p_group:id});delete S.gmsgs[id];S.tab="groups";S.openGroup=null},"יצאת מהקבוצה");
+async function createGroup(name,kind){name=name.trim();if(!name){toast("תן שם לקבוצה, למשל שם המקום");return}
+  const id=await act(()=>rpc("create_group",{p_name:name,p_kind:kind}));if(id){closeSheet();S.gmsgs[id]={msgs:[],last:0};S.tab="group";S.openGroup=id;await poll()}}
+const blockUser=id=>act(async()=>{await rpc("block_user",{p_user:id});closeSheet();if(S.open&&S.chats.every(c=>c.id!==S.open)){S.tab="near";S.open=null}},"המשתמש נחסם. לא תראו יותר אחד את השני.");
+const reportUser=(id,reason)=>act(async()=>{await rpc("report_user",{p_user:id,p_reason:reason});closeSheet()},"תודה. הדיווח נשלח.");
+function setRadius(r){S.radius=r;saveLocal();S.square={msgs:[],last:0};S.lastPush=0;pushPresence(true).then(poll);render()}
+
+/* =================================================================
+   Views
+   ================================================================= */
+const near=p=>p.in_range;
+function closeness(d){const k=d/S.radius;return k<=.34?"ממש לידך":k<=.67?"קרוב":k<=1?"בטווח":"מחוץ לטווח"}
+function distTag(d){const k=d/S.radius,n=k<=.34?3:k<=.67?2:k<=1?1:0;
+  return el("span",{class:"d",title:closeness(d)},fmt(d),el("span",{class:"bars","aria-hidden":"true"},...[1,2,3].map(i=>el("i",{class:i<=n?"on":""}))))}
+function chatWith(uid){return S.chats.find(c=>c.other_id===uid&&c.status!=="declined")}
+function statusChip(c){if(!c)return null;
+  const m={active:["מחוברים","live"],pending:c.i_requested?["ממתין לאישור","wait"]:["מבקש/ת לשוחח","wait"],declined:["לא אושר",""],closed:["ננעלה",""]}[c.status];
+  return m?el("span",{class:"chip "+m[1]},m[0]):null}
+
+function radarSVG(){
+  const NS="http://www.w3.org/2000/svg",s=document.createElementNS(NS,"svg"),away=!S.present||S.paused;
+  s.setAttribute("viewBox","0 0 320 320");s.setAttribute("class","radar");s.setAttribute("role","img");
+  s.setAttribute("aria-label",`${S.people.filter(near).length} אנשים בטווח ${S.radius} מטר`);
+  const C=160,R=150,max=S.radius*1.45,sc=d=>Math.min(d/max,1)*R,rIn=sc(S.radius);
+  const svg=(t,a,parent=s)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);parent.append(e);return e};
+  const defs=svg("defs",{});
+  const grad=svg("radialGradient",{id:"disc",cx:"50%",cy:"50%",r:"50%"},defs);
+  [[0,1],[.7,.85],[1,.45]].forEach(([o,op])=>svg("stop",{offset:o,style:`stop-color:var(--ring-soft);stop-opacity:${op}`},grad));
+  svg("circle",{cx:C,cy:C,r:R-2,fill:"none",stroke:"var(--line)","stroke-width":1.5,"stroke-dasharray":"0.5 6","stroke-linecap":"round"});
+  if(away)svg("circle",{cx:C,cy:C,r:rIn,fill:"none",stroke:"var(--lock)","stroke-width":1.5,"stroke-dasharray":"5 6",opacity:.7});
+  else{
+    svg("circle",{cx:C,cy:C,r:rIn,fill:"url(#disc)"});
+    svg("circle",{cx:C,cy:C,r:rIn*.5,fill:"none",stroke:"var(--ring)","stroke-opacity":.16});
+    const phase=-(performance.now()%3600);
+    [0,1].forEach(i=>{const c=svg("circle",{class:"pulse",cx:C,cy:C,r:rIn,fill:"none",stroke:"var(--ring)","stroke-width":1.5});c.style.animationDelay=(phase-i*1800)+"ms"});
+    svg("circle",{cx:C,cy:C,r:rIn,fill:"none",stroke:"var(--ring)","stroke-width":1.5,"stroke-opacity":.6});
+  }
+  const label=S.radius+" מ׳",pw=label.length*6.4+20,py=C+rIn;
+  svg("rect",{x:C-pw/2,y:py-11,width:pw,height:22,rx:11,fill:"var(--surface)",stroke:away?"var(--line)":"var(--ring)","stroke-opacity":away?1:.5});
+  svg("text",{x:C,y:py+4,"text-anchor":"middle","font-size":11.5,"font-weight":600,fill:away?"var(--muted)":"var(--ink)"}).textContent=label;
+  [...S.people].sort((a,b)=>near(a)-near(b)).forEach(p=>{
+    // הכיוון נגזר מהמזהה ולא מהמיקום האמיתי: רואים רק כמה קרוב, לא לאיזה כיוון
+    const ang=(hash(p.id)%360)*Math.PI/180,r=sc(p.distance),x=C+r*Math.sin(ang),y=C-r*Math.cos(ang);
+    if(!near(p)){svg("circle",{cx:x,cy:y,r:3.5,fill:"var(--lock)",opacity:.45});return}
+    const cid="c-"+hash(p.id);const cp=svg("clipPath",{id:cid},defs);svg("circle",{cx:x,cy:y,r:12},cp);
+    const g=svg("g",{class:"who",tabindex:0,role:"button","aria-label":`${p.name}, ${fmt(p.distance)}`});
+    g.addEventListener("click",()=>openPerson(p));g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openPerson(p)}});
+    const c=chatWith(p.id),live=c&&c.status==="active";
+    svg("circle",{class:"halo",cx:x,cy:y,r:14.5,fill:"var(--surface)",stroke:live?"var(--signal)":"none","stroke-width":2},g);
+    const im=svg("image",{href:photoOf(p),x:x-12,y:y-12,width:24,height:24,"clip-path":`url(#${cid})`,preserveAspectRatio:"xMidYMid slice"},g);
+    im.addEventListener("error",()=>im.setAttribute("href",initialAvatar(p.id,p.name)));
+    svg("text",{x,y:y+27,"text-anchor":"middle","font-size":10.5,"font-weight":500,fill:"var(--ink)",stroke:"var(--surface)","stroke-width":3,"paint-order":"stroke","stroke-linejoin":"round"},g).textContent=p.name;
+  });
+  if(away)svg("circle",{cx:C,cy:C,r:7,fill:"var(--lock)",stroke:"var(--surface)","stroke-width":3});
+  else{svg("circle",{cx:C,cy:C,r:17,fill:"var(--signal)",opacity:.14});
+    if(S.me.photo_url){const cp=svg("clipPath",{id:"c-me"},defs);svg("circle",{cx:C,cy:C,r:11},cp);
+      svg("circle",{cx:C,cy:C,r:13,fill:"var(--signal)"});
+      svg("image",{href:S.me.photo_url,x:C-11,y:C-11,width:22,height:22,"clip-path":"url(#c-me)",preserveAspectRatio:"xMidYMid slice"})}
+    else svg("circle",{cx:C,cy:C,r:8,fill:"var(--signal)",stroke:"var(--surface)","stroke-width":3})}
+  return s;
+}
+
+function locationNotice(){
+  if(S.paused)return el("div",{class:"notice"},"אתה לא גלוי עכשיו, ולכן לא רואים אותך ואתה לא רואה אחרים. ",el("button",{class:"btn sm dark",onclick:()=>setPaused(false)},"להיות גלוי"));
+  if(S.posErr==="denied")return el("div",{class:"notice"},el("b",{},"צריך הרשאת מיקום. "),"Niro מראה מי נמצא לידך, ולכן הוא חייב לדעת איפה אתה. אפשר לאשר בהגדרות הדפדפן (סמל המנעול ליד הכתובת) ואז לרענן את הדף.");
+  if(S.posErr==="unsupported")return el("div",{class:"notice"},"הדפדפן הזה לא תומך במיקום. נסה בדפדפן אחר בטלפון.");
+  if(!S.pos)return el("div",{class:"notice"},"מחפש את המיקום שלך… אם הדפדפן שואל, אשר גישה למיקום.");
+  if(!S.online)return el("div",{class:"notice"},"אין חיבור לאינטרנט. ננסה שוב בעוד רגע.");
+  if(S.pos.acc>150)return el("div",{class:"notice"},`המיקום לא מדויק כרגע (±${S.pos.acc} מ׳). כדאי להפעיל GPS או לצאת לשטח פתוח.`);
+  return null;
+}
+
+function viewNear(){
+  const box=el("div",{class:"wrap"});
+  const n=locationNotice();if(n)box.append(n);
+  const here=S.people.filter(near),far=S.people.filter(p=>!near(p));
+  for(const c of S.chats)if(c.status==="pending"&&!c.i_requested){
+    box.append(el("div",{class:"banner"},avatar({id:c.other_id,name:c.other_name,photo_url:c.other_photo}),
+      el("p",{},el("b",{},c.other_name)," רוצה לשוחח איתך בפרטי",c.distance!=null?` · ${fmt(c.distance)} ממך`:""),
+      el("div",{class:"acts"},el("button",{class:"btn primary full",onclick:()=>answerChat(c.id,true)},"אשר שיחה"),el("button",{class:"btn full",onclick:()=>answerChat(c.id,false)},"לא עכשיו"))))}
+  box.append(el("div",{class:"radarbox"},radarSVG(),
+    el("div",{class:"rangebar"},
+      el("div",{class:"lbl"},el("span",{},"טווח הגילוי"),el("b",{},S.present&&!S.paused?`${here.length} ${here.length===1?"אדם":"אנשים"} בטווח`:"לא גלוי")),
+      el("div",{class:"seg",role:"group","aria-label":"טווח הגילוי"},...[50,100,150,250].map(r=>el("button",{"aria-pressed":S.radius===r?"true":"false",onclick:()=>setRadius(r)},r+" מ׳")))),
+    el("p",{class:"radar-note"},"המרחק אמיתי. הכיוון ברדאר אקראי, כדי שאף אחד לא יוכל לאתר בדיוק איפה אתה.")));
+  box.append(el("div",{class:"section-h"},el("h2",{},"מחוברים קרוב"),el("small",{},`ברדיוס ${S.radius} מ׳`)));
+  const list=el("div",{class:"list"});
+  if(!here.length)list.append(el("p",{class:"empty"},S.present?"עוד אין כאן אף אחד עם Niro. שלח את הקישור לחברים שנמצאים איתך, או נסה להגדיל את הטווח.":"ברגע שנמצא את המיקום שלך, תראה כאן מי בסביבה."));
+  here.forEach(p=>list.append(personRow(p)));box.append(list);
+  if(far.length){box.append(el("div",{class:"section-h"},el("h2",{},"קצת רחוק"),el("small",{},"מחוץ לטווח, אי אפשר לפנות")));
+    const l2=el("div",{class:"list"});far.forEach(p=>l2.append(personRow(p)));box.append(l2)}
+  box.append(el("div",{class:"card"},el("p",{},S.paused?"אתה במצב לא גלוי.":"רוצה הפסקה? במצב לא גלוי אף אחד לא רואה אותך, וכל השיחות הפתוחות ננעלות."),
+    el("button",{class:"btn "+(S.paused?"dark":""),onclick:()=>setPaused(!S.paused)},S.paused?"להיות גלוי שוב":"לא להיות גלוי")));
+  return box;
+}
+function personRow(p){
+  const c=chatWith(p.id);
+  return el("button",{class:"person"+(near(p)?"":" out"),disabled:near(p)||c?false:"",onclick:()=>{if(c&&c.status!=="declined"){S.tab="chat";S.open=c.id;render();poll()}else openPerson(p)}},
+    avatar(p),el("div",{class:"meta"},el("b",{},p.name),el("span",{},p.bio||" ")),
+    el("div",{class:"dist"},distTag(p.distance),statusChip(c)));
+}
+function openPerson(p){
+  const c=chatWith(p.id),can=near(p)&&(!c||c.status==="declined"||c.status==="closed");
+  let blockArmed=false;
+  const blockBtn=el("button",{class:"btn sm danger",onclick:()=>{if(!blockArmed){blockArmed=true;blockBtn.textContent="לחץ שוב כדי לחסום";return}blockUser(p.id)}},"חסום");
+  sheet([
+    el("div",{class:"top"},el("img",{class:"av",src:photoOf(p),alt:"",style:"cursor:zoom-in",onclick:()=>lightbox(photoOf(p))}),el("div",{},el("h3",{},p.name),el("p",{},`${fmt(p.distance)} ממך · ${closeness(p.distance)}`))),
+    p.bio?el("p",{},p.bio):null,
+    el("div",{class:"note"},`השיחה תיפתח רק אם ${p.name} יאשר/תאשר, והיא ננעלת כשאחד מכם מתרחק.`),
+    el("div",{class:"acts"},
+      c&&c.status!=="declined"&&c.status!=="closed"?el("button",{class:"btn dark full",onclick:()=>{closeSheet();S.tab="chat";S.open=c.id;render();poll()}},"פתח את השיחה")
+        :el("button",{class:"btn primary full",disabled:can?false:"",onclick:()=>requestChat(p.id)},"בקש לשוחח"),
+      el("button",{class:"btn",onclick:closeSheet},"סגור")),
+    el("div",{class:"acts",style:"justify-content:flex-start"},el("button",{class:"btn sm ghost",onclick:()=>openReport(p)},"דווח"),blockBtn)
+  ],p.name);
+}
+function openReport(u){
+  const ta=el("textarea",{id:"repText",maxlength:500,placeholder:"מה קרה? (לא חובה)"});
+  sheet([el("h3",{},`דיווח על ${u.name}`),el("p",{},"הדיווח נשמר אצלנו ונבדק. כדאי גם לחסום אם מישהו מטריד אותך."),
+    el("label",{class:"field"},"פרטים",ta),
+    el("div",{class:"acts"},el("button",{class:"btn primary full",onclick:()=>reportUser(u.id,ta.value)},"שלח דיווח"),el("button",{class:"btn",onclick:closeSheet},"ביטול"))],"דיווח");
+}
+
+/* messages */
+function msgNode(m,showWho){
+  const body=[];
+  if(m.image_url)body.push(el("img",{class:"shot",src:m.image_url,alt:"תמונה",loading:"lazy",onclick:()=>lightbox(m.image_url)}));
+  if(m.body)body.push(m.body);
+  const mine=(m.user_id||m.sender)===S.me.id;
+  if(mine)return el("div",{class:"m mine"+(m.image_url?" pic":"")},...body);
+  if(!showWho)return el("div",{class:"m them"+(m.image_url?" pic":"")},...body);
+  const u={id:m.user_id,name:m.name,photo_url:m.photo_url};
+  const w=el("span",{class:"who"},m.name);w.style.color=`hsl(${hash(m.user_id)%360} 50% 42%)`;
+  return el("div",{class:"row"},avatar(u),el("div",{class:"m them"+(m.image_url?" pic":"")},w,...body));
+}
+function composer(onSend,ph){
+  const f=el("form",{class:"composer wrap"}),i=el("input",{id:"composerInput",placeholder:ph,autocomplete:"off","aria-label":ph,maxlength:1000,enterkeyhint:"send"});
+  const at=el("button",{type:"button",class:"attach","aria-label":"שלח תמונה",title:"שלח תמונה",html:ICONS.camera,onclick:()=>pickImage({max:1280},url=>onSend({img:url}))});
+  f.append(at,i,el("button",{type:"submit",class:"send"},"שלח"));
+  f.addEventListener("submit",e=>{e.preventDefault();const v=i.value.trim();i.value="";if(v)onSend({t:v});setTimeout(()=>$("#composerInput")?.focus(),0)});
+  return f;
+}
+function msgList(arr,showWho,locked,emptyText){
+  const ms=el("div",{class:"msgs wrap"+(locked?" locked":""),id:"msgs"});
+  if(!arr.length&&emptyText)ms.append(el("div",{class:"m sys"},emptyText));
+  arr.forEach(m=>ms.append(msgNode(m,showWho)));return ms;
+}
+function viewSquare(){
+  const away=!S.present||S.paused,n=S.people.filter(near).length,frag=el("div",{class:"pane"});
+  frag.append(el("div",{class:"chathead wrap"},el("div",{class:"meta"},el("b",{},"הכיכר · כולם בסביבה"),el("small",{},away?"לא גלוי":`אתה ועוד ${n} ברדיוס ${S.radius} מ׳`)),
+    el("div",{class:"stack"},...S.people.filter(near).slice(0,4).map(p=>avatar(p)))));
+  frag.append(msgList(S.square.msgs,true,away,"כל מי שברדיוס שלך רואה את מה שנכתב כאן. הודעות נמחקות אחרי כמה שעות."));
+  frag.append(away?el("div",{class:"lockline wrap"},S.paused?"אתה במצב לא גלוי.":"מחכים למיקום שלך…",S.paused?el("button",{class:"btn dark",onclick:()=>setPaused(false)},"להיות גלוי"):null)
+    :composer(sendSquare,"הודעה לכל מי שבסביבה"));
+  return frag;
+}
+function viewGroups(){
+  const box=el("div",{class:"wrap"}),away=!S.present||S.paused;
+  box.append(el("div",{class:"section-h"},el("h2",{},"קבוצות לפי מקום"),el("button",{class:"btn primary sm",disabled:away?"":false,onclick:openCreate},"+ קבוצה חדשה")));
+  box.append(el("p",{style:"margin:0;color:var(--muted);font-size:13px"},"קבוצה קטנה סביב מקום אחד: בית קפה, חנות או בניין. אפשר להצטרף כשנמצאים עד 150 מ׳ מהמקום."));
+  box.append(el("div",{class:"filters"},el("div",{class:"seg",role:"group","aria-label":"סינון"},
+    ...[["all","הכול"],["cafe","בתי קפה"],["shop","חנויות"],["building","בניינים"]].map(([k,l])=>el("button",{"aria-pressed":S.gfilter===k?"true":"false",onclick:()=>{S.gfilter=k;render()}},l)))));
+  const list=el("div",{class:"list"});
+  const gs=S.groups.filter(g=>S.gfilter==="all"||g.kind===S.gfilter);
+  if(!gs.length)list.append(el("p",{class:"empty"},away?"הקבוצות יופיעו כשנמצא את המיקום שלך.":"אין עדיין קבוצות במקום הזה. אפשר לפתוח את הראשונה."));
+  gs.forEach(g=>{
+    const unread=g.joined&&g.last_id&&g.last_id>(S.seen.group[g.id]||0);
+    const action=g.joined?el("button",{class:"btn dark sm",onclick:()=>{S.tab="group";S.openGroup=g.id;render();poll()}},"פתח",unread?el("span",{class:"badge",style:"margin-inline-start:6px"},"•"):null)
+      :el("button",{class:"btn primary sm",disabled:g.can_join?false:"",onclick:()=>joinGroup(g.id)},g.can_join?"הצטרף":"רחוק מדי");
+    list.append(el("div",{class:"group"+(g.can_join?"":" out")},gIcon(g.kind),
+      el("div",{class:"meta"},el("b",{},g.name),el("span",{},`${KINDS[g.kind]||""} · ${fmt(g.distance)}`),el("span",{},g.members_here?`${g.members_here} מחוברים עכשיו`:"אין כרגע אף אחד")),
+      action))});
+  box.append(list);return box;
+}
+function viewGroup(){
+  const g=S.groups.find(x=>x.id===S.openGroup),st=S.gmsgs[S.openGroup]||{msgs:[]},frag=el("div",{class:"pane"});
+  const member=g&&g.joined&&!S.paused;
+  frag.append(el("div",{class:"chathead wrap"},el("button",{class:"back","aria-label":"חזרה",onclick:()=>{S.tab="groups";S.openGroup=null;render()}},"→"),gIcon(g?g.kind:"other"),
+    el("div",{class:"meta"},el("b",{},g?g.name:"קבוצה"),el("small",{},g?`${KINDS[g.kind]} · ${g.members_here} מחוברים`:"")),
+    member?el("button",{class:"btn sm ghost",onclick:()=>leaveGroup(g.id)},"יציאה"):null));
+  frag.append(msgList(st.msgs,true,!member,"ההודעות כאן גלויות רק לחברי הקבוצה שנמצאים במקום."));
+  frag.append(member?composer(m=>sendGroup(g.id,m),`הודעה ל${g.name}`)
+    :el("div",{class:"lockline wrap"},"יצאת מהקבוצה כי אתה כבר לא בסביבת המקום.",el("button",{class:"btn",onclick:()=>{delete S.gmsgs[S.openGroup];S.tab="groups";S.openGroup=null;render()}},"חזרה לקבוצות")));
+  return frag;
+}
+function openCreate(){
+  let kind="cafe";
+  const name=el("input",{id:"gName",maxlength:40,placeholder:"למשל: קפה נחת, יפת 12, חנות הספרים",autocomplete:"off"});
+  const seg=el("div",{class:"seg",role:"group","aria-label":"סוג המקום"});
+  const draw=()=>{seg.innerHTML="";Object.entries(KINDS).forEach(([k,l])=>seg.append(el("button",{type:"button","aria-pressed":kind===k?"true":"false",onclick:()=>{kind=k;draw()}},l)))};draw();
+  const form=el("form",{style:"display:grid;gap:12px"},el("label",{class:"field"},"שם המקום",name),el("div",{class:"field"},"סוג",seg),
+    el("div",{class:"acts"},el("button",{type:"submit",class:"btn primary full"},"פתח קבוצה"),el("button",{type:"button",class:"btn",onclick:closeSheet},"ביטול")));
+  form.addEventListener("submit",e=>{e.preventDefault();createGroup(name.value,kind)});
+  sheet([el("h3",{},"קבוצה חדשה במקום"),el("p",{},"הקבוצה נקשרת למקום שבו אתה עומד עכשיו. מי שנמצא עד 150 מ׳ ממנו יראה אותה ויוכל להצטרף."),form],"קבוצה חדשה");
+  setTimeout(()=>name.focus(),50);
+}
+function viewChats(){
+  const box=el("div",{class:"wrap"});
+  box.append(el("div",{class:"section-h"},el("h2",{},"שיחות פרטיות"),el("small",{},"פתוחות רק כל עוד שניכם כאן")));
+  if(!S.chats.length)box.append(el("p",{class:"empty"},"עוד אין שיחות. בחר מישהו בלשונית ״בסביבה״ ושלח בקשה. השיחה נפתחת רק אחרי שהוא מאשר."));
+  const l=el("div",{class:"list"});
+  S.chats.forEach(c=>{const u={id:c.other_id,name:c.other_name,photo_url:c.other_photo};
+    const unread=c.last_id&&c.last_sender!==S.me.id&&c.last_id>(S.seen.chat[c.id]||0);
+    const prev=c.status==="pending"?(c.i_requested?"ממתין שיאשרו את הבקשה":"מבקש/ת לשוחח איתך"):c.status==="closed"?"השיחה ננעלה":c.status==="declined"?"הבקשה לא אושרה":
+      c.last_id?(c.last_sender===S.me.id?"אתה: ":"")+(c.last_image&&!c.last_body?"תמונה":c.last_body||""):"אפשר להתחיל לכתוב";
+    l.append(el("button",{class:"person"+(c.status==="closed"||c.status==="declined"?" out":""),onclick:()=>{if(c.status==="pending"&&!c.i_requested){S.tab="near";render();return}S.tab="chat";S.open=c.id;render();poll()}},
+      avatar(u),el("div",{class:"meta"},el("b",{},c.other_name,unread?el("span",{class:"badge",style:"margin-inline-start:6px"},"•"):null),el("span",{},prev)),
+      el("div",{class:"dist"},c.distance!=null?distTag(c.distance):null,statusChip(c))))});
+  box.append(l);return box;
+}
+function viewChat(){
+  const c=S.chats.find(x=>x.id===S.open),frag=el("div",{class:"pane"});
+  if(!c){S.tab="chats";S.open=null;return viewChats()}
+  const u={id:c.other_id,name:c.other_name,photo_url:c.other_photo},st=S.priv[c.id]||{msgs:[]};
+  frag.append(el("div",{class:"chathead wrap"},el("button",{class:"back","aria-label":"חזרה",onclick:()=>{S.tab="chats";S.open=null;render()}},"→"),avatar(u,38),
+    el("div",{class:"meta"},el("b",{},c.other_name),el("small",{},c.distance!=null?`${fmt(c.distance)} ממך · ${closeness(c.distance)}`:"")),
+    el("button",{class:"btn sm ghost","aria-label":"אפשרויות",onclick:()=>openPerson({id:c.other_id,name:c.other_name,photo_url:c.other_photo,bio:"",distance:c.distance??0,in_range:c.status!=="closed"})},"⋯")));
+  frag.append(msgList(st.msgs,false,c.status==="closed",c.status==="active"?`אתם מחוברים. השיחה תינעל כשאחד מכם יתרחק יותר מ־${S.radius} מ׳.`:null));
+  if(c.status==="active")frag.append(composer(m=>sendPrivate(c.id,m),`הודעה ל${c.other_name}`));
+  else if(c.status==="pending")frag.append(el("div",{class:"lockline wrap"},c.i_requested?`ממתין ש${c.other_name} יאשר/תאשר…`:`${c.other_name} מבקש/ת לשוחח.`,
+    c.i_requested?el("button",{class:"btn",onclick:()=>dismissChat(c.id)},"בטל בקשה"):el("div",{class:"acts"},el("button",{class:"btn primary",onclick:()=>answerChat(c.id,true)},"אשר"),el("button",{class:"btn",onclick:()=>answerChat(c.id,false)},"דחה"))));
+  else if(c.status==="declined")frag.append(el("div",{class:"lockline wrap"},"הבקשה לא אושרה. אפשר לכתוב בכיכר לכולם.",el("button",{class:"btn",onclick:()=>dismissChat(c.id)},"הסר")));
+  else frag.append(el("div",{class:"lockline wrap"},"השיחה ננעלה כי אחד מכם התרחק, וההודעות נמחקו.",el("button",{class:"btn",onclick:()=>dismissChat(c.id)},"סגור")));
+  return frag;
+}
+
+/* profile */
+function openProfile(){
+  const ph=el("img",{class:"av",src:photoOf(S.me),alt:"התמונה שלך"});
+  const name=el("input",{id:"meName",value:S.me.name,maxlength:30});
+  const bio=el("input",{id:"meBio",value:S.me.bio||"",maxlength:80,placeholder:"שורה קצרה עליך"});
+  let newPhoto=undefined;
+  const form=el("form",{style:"display:grid;gap:12px"},
+    el("div",{class:"top"},ph,el("div",{},el("h3",{},"הפרופיל שלי"),el("p",{},"מה שאנשים בסביבה רואים"))),
+    el("button",{type:"button",class:"btn",onclick:()=>pickImage({max:400,square:true},url=>{newPhoto=url;ph.src=url;toast("התמונה עלתה. לחץ שמור.")})},"החלף תמונה"),
+    el("label",{class:"field"},"שם תצוגה",name),el("label",{class:"field"},"שורה עליך",bio),
+    el("div",{class:"acts"},el("button",{type:"submit",class:"btn primary full"},"שמור"),el("button",{type:"button",class:"btn",onclick:closeSheet},"סגור")));
+  form.addEventListener("submit",async e=>{e.preventDefault();const n=name.value.trim();if(!n){toast("צריך שם תצוגה");return}
+    const upd={name:n,bio:bio.value.trim(),updated_at:new Date().toISOString()};if(newPhoto!==undefined)upd.photo_url=newPhoto;
+    const {error}=await sb.from("profiles").update(upd).eq("id",S.me.id);
+    if(error){toast(errText(error));return}Object.assign(S.me,upd);closeSheet();toast("הפרופיל נשמר");render()});
+  sheet([form,el("div",{class:"note"},"החשבון שלך שמור בדפדפן הזה בלבד. אם תמחק את נתוני הדפדפן, תצטרך להירשם מחדש.")],"הפרופיל שלי");
+}
+
+/* =================================================================
+   Render
+   ================================================================= */
+function render(soft){
+  const app=$("#app");
+  if(S.screen!=="app"){
+    if(app.dataset.screen===S.screen&&soft)return;app.dataset.screen=S.screen;app.innerHTML="";
+    app.append(S.screen==="onboard"?viewOnboard():S.screen==="config"?viewConfig():el("div",{class:"screen wrap"},brand(),el("div",{class:"spinner","aria-label":"טוען"})));
+    return;
+  }
+  if(app.dataset.screen!=="app"){app.dataset.screen="app";app.innerHTML="";
+    const mebtn=el("button",{class:"mebtn",id:"meBtn","aria-label":"הפרופיל שלי",onclick:openProfile});
+    app.append(el("header",{class:"top wrap"},brand(),el("div",{class:"place"},el("b",{id:"placeTitle"},"הסביבה שלך"),el("small",{},el("span",{class:"dot",id:"hereDot"}),el("span",{id:"hereTxt"},""))),mebtn),
+      el("nav",{class:"tabs wrap",role:"tablist"},...[["near","בסביבה"],["square","הכיכר"],["groups","קבוצות"],["chats","שיחות"]].map(([k,l])=>
+        el("button",{role:"tab","data-tab":k,onclick:()=>{S.tab=k;S.open=null;S.openGroup=null;if(k==="square"){S.seen.square=S.square.last;saveLocal()}render();poll()}},l,el("span",{class:"badge",hidden:""})))),
+      el("main",{id:"main"}));
+  }
+  const mb=$("#meBtn");mb.innerHTML="";mb.append(avatar(S.me));
+  const main=$("#main");
+  const input=$("#composerInput"),draft=input?input.value:"",hadFocus=input&&document.activeElement===input;
+  const msgsEl=$("#msgs"),atBottom=!msgsEl||msgsEl.scrollHeight-msgsEl.scrollTop-msgsEl.clientHeight<60;
+  const scroll=main.scrollTop;
+  // header status
+  const away=!S.present||S.paused,n=S.people.filter(near).length;
+  $("#hereDot").className="dot"+(S.paused||!S.pos?" off":!S.online||S.posErr?" warn":"");
+  $("#hereTxt").textContent=S.paused?"לא גלוי":S.posErr==="denied"?"אין הרשאת מיקום":!S.pos?"מחפש מיקום…":!S.online?"אין חיבור":away?"מתחבר…":`${n} בסביבה · ±${S.pos.acc} מ׳`;
+  // tabs & badges
+  const navTab=S.tab==="chat"?"chats":S.tab==="group"?"groups":S.tab;
+  const sqUnread=S.tab==="square"?0:S.square.msgs.filter(m=>m.id>S.seen.square&&m.user_id!==S.me.id).length;
+  const chUnread=S.chats.filter(c=>(c.status==="pending"&&!c.i_requested)||(c.last_id&&c.last_sender!==S.me.id&&c.last_id>(S.seen.chat[c.id]||0)&&!(S.tab==="chat"&&S.open===c.id))).length;
+  const grUnread=S.groups.filter(g=>g.joined&&g.last_id&&g.last_id>(S.seen.group[g.id]||0)&&!(S.tab==="group"&&S.openGroup===g.id)).length;
+  const counts={near:S.chats.filter(c=>c.status==="pending"&&!c.i_requested).length,square:sqUnread,groups:grUnread,chats:chUnread};
+  document.querySelectorAll("nav.tabs button").forEach(b=>{b.setAttribute("aria-selected",b.dataset.tab===navTab?"true":"false");
+    const bd=b.querySelector(".badge"),v=b.dataset.tab==="near"?0:counts[b.dataset.tab];bd.hidden=!v;bd.textContent=v>99?"99+":v});
+  const total=counts.square+counts.groups+counts.chats;document.title=total?`(${total}) Niro`:"Niro";
+  main.innerHTML="";
+  main.append({near:viewNear,square:viewSquare,groups:viewGroups,group:viewGroup,chats:viewChats,chat:viewChat}[S.tab]());
+  const ni=$("#composerInput");if(ni){ni.value=draft;if(hadFocus)ni.focus({preventScroll:true})}
+  const m2=$("#msgs");if(m2&&(atBottom||!soft)){m2.scrollTop=m2.scrollHeight;m2.querySelectorAll("img.shot").forEach(i=>{if(!i.complete)i.addEventListener("load",()=>{if(m2.scrollHeight-m2.scrollTop-m2.clientHeight<300)m2.scrollTop=m2.scrollHeight},{once:true})})}
+  if(soft)main.scrollTop=scroll;
+}
+
+boot().catch(e=>{console.error(e);S.screen="onboard";render()});
+</script>
+</body>
+</html>
